@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.*; 
+
 
 public class TestRawSocketSender {
 
@@ -347,24 +349,32 @@ public class TestRawSocketSender {
 
         // start mock fluentd
         int port = MockFluentd.randomPort(); // Use a random port available
+        System.out.println("Random Port: " + port); 
         final List<Event> elist = new ArrayList<Event>();
         final MockFluentd fluentd = new MockFluentd(port, new MockFluentd.MockProcess() {
             public void process(MessagePack msgpack, Socket socket) throws IOException {
+                int tmp = 0;
+                System.out.println("tmp before: " + tmp); 
                 try {
                     BufferedInputStream in = new BufferedInputStream(socket.getInputStream());
                     Unpacker unpacker = msgpack.createUnpacker(in);
                     while (true) {
                         Event e = unpacker.read(Event.class);
                         elist.add(e);
+                        tmp += 1;
                     }
                 } catch (EOFException e) {
                     // ignore
+                    
                 } finally {
+                    System.out.println("tmp after: " + tmp);
+                    System.out.println("elist size: " + elist.size());
                     socket.close();
                 }
             }
         });
-
+        System.out.println("After Create MockFluentd");
+        System.out.println("elist size: " + elist.size());
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
             @Override
@@ -411,7 +421,7 @@ public class TestRawSocketSender {
         // close mock server sockets
         fluentd.close();
 
-        // check data
+        // check data 
         assertEquals(0, bufferFull.getCount());
         assertEquals(i, elist.size());
     }

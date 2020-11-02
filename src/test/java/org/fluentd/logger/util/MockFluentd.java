@@ -93,8 +93,10 @@ public class MockFluentd extends Thread {
     private AtomicBoolean finished = new AtomicBoolean(false);
 
     public MockFluentd(int port, MockProcess mockProcess) {
+        System.out.println("In MockFluentd constructor but not yet create mockProcess");
         this.port = port;
         process = mockProcess;
+        System.out.println("In MockFluentd constructor has already created mockProcess");
     }
 
     /**
